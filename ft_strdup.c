@@ -1,5 +1,4 @@
-#include "ft_strlen.c"
-#include <unistd.h>
+#include "minitalk.h"
 
 char	*ft_strdup(const char *s)
 {

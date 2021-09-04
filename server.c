@@ -1,98 +1,36 @@
-#include <unistd.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "minitalk.h"
 
-int	bin_number[8];
-
-void	reset_bin_number()
+void	get_result(int signum)
 {
-	int	inc;
+	static unsigned char	c = 255;
+	static int				ascii_n = 0;
 
-	inc = 0;
-	while(inc < 8)
-	{
-		bin_number[inc] = -1;
-		inc++;
-	}
-}
-
-int	full_filled()
-{
-	int	inc;
-	int	who_many_nbrs;
-
-	inc = 0;
-	who_many_nbrs = 0;
-	while(inc < 8)
-	{
-		if (bin_number[inc] == 0 || bin_number[inc] == 1)
-			who_many_nbrs++;
-		inc++;
-	}
-	if (who_many_nbrs == 8)
-		return (1);
-	return (0);
-}
-
-void	set_bin_numbers(int sig_value)
-{
-	int		inc;
-	int		total;
-	char	*ch;
-	int		max;
-
-	inc = 0;
-	total = 0;
-	max = 128;
-	while(inc < 8)
-	{
-		if (bin_number[inc] == -1)
-		{
-			bin_number[inc] = sig_value;
-			inc++;
-			break;
-		}
-		inc++;
-	}
-	if (inc == 8)
-	{
-		inc = 0;
-		while(inc < 8)
-		{
-			if (bin_number[inc] == 1)
-				total += max;
-			max /= 2;
-			inc++;
-		}
-		ch = malloc(1);
-		*ch = (char) total;
-		write(1, ch, 1);
-		free(ch);
-	}
-}
-
-void get_result(int signum)
-{
-	if (full_filled() == 1)
-		reset_bin_number();
 	if (signum == SIGUSR1)
-		set_bin_numbers(1);
+		c ^= 128 >> ascii_n;
 	else if (signum == SIGUSR2)
-		set_bin_numbers(0);
+		c |= 128 >> ascii_n;
+	ascii_n++;
+	if (ascii_n == 8)
+	{
+		write(1, &c,1);
+		ascii_n = 0;
+		if (c == 0)
+		{
+			ft_putstr_fd("\n", 1);
+		}
+		c = 255;
+	}
 }
 
-
-int main(int argc, char **argv)
+int 	main(int argc, char **argv)
 {
-    int pid;
+	char *pid;
 
-	pid = getpid();
-	reset_bin_number();
-	printf("%d\n", pid);
+	pid = ft_itoa(((int)getpid()));
+	write(1, pid, ft_strlen(pid));
 	signal(SIGUSR1, get_result);
 	signal(SIGUSR2, get_result);
 	while(1)
 		pause();
-    return (0);
+	return (0);
 }

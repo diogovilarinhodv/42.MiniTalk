@@ -1,47 +1,37 @@
-#include <unistd.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "minitalk.h"
 
-#include "ft_atoi.c"
-#include "ft_strdup.c"
-
-void    send_bin(char ch, int server_pid)
+void	send_bin(int server_pid, char *str)
 {
-	int	num;
-	int	max;
+	int		inc;
+	int		ascii_n;
 
-	num = (int) ch;
-	max = 128;
-	while(max > 0)
+	inc = 0;
+	while(*(str + inc) != '\0')
 	{
-		if (num >= max)
+		ascii_n = 0;
+		while (ascii_n < 8)
 		{
-			num -= max;
-			kill(server_pid, SIGUSR1);
+			if (*(str + inc) & 128 >> ascii_n)
+				kill(server_pid, SIGUSR2);
+			else
+				kill(server_pid, SIGUSR1);
+			ascii_n++;
+			usleep(25);
 		}
-		else
-			kill(server_pid, SIGUSR2);
-		max /= 2;
-		usleep(25);
+		inc++;
 	}
 }
 
-int main(int argc, char **argv)
+int		main(int argc, char **argv)
 {
-    int     server_pid;
-    char    *str;
-    int     inc;
+	int		server_pid;
+	char	*str;
 
-    server_pid = ft_atoi(argv[argc - 2]);
-    str = ft_strdup(argv[argc - 1]);
-    inc = 0;
-    while (*(str + inc) != '\0')
-    {
-        send_bin(*(str + inc), server_pid);
-        inc++;
-    }
+	if (argc != 3)
+		return (1);
+	server_pid = ft_atoi(argv[argc - 2]);
+	str = ft_strdup(argv[argc - 1]);
+	send_bin(server_pid, str);
 	free(str);
-    kill(server_pid, SIGTERM);
-    return (0);
+	return (0);
 }
