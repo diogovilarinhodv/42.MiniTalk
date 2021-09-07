@@ -1,3 +1,5 @@
+#include "minitalk.h"
+
 static int	isNegative(int cnt, const char *nptr)
 {
 	if (*(nptr + cnt) == '-'
